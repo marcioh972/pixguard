@@ -73,7 +73,7 @@ flowchart TD
 ### Devolução
 
 `EM_PROCESSAMENTO` → `DEVOLVIDO` ou `NAO_REALIZADO`. A devolução já conta no saldo enquanto está em processamento;
-`NAO_REALIZADO` estorna o saldo.
+`NAO_REALIZADO` estorna o saldo
 
 ## Como rodar
 
@@ -469,5 +469,6 @@ aplicada (o `MigracaoTest` valida o histórico do Flyway contra os arquivos) · 
 Contador de tentativas no job · coluna de última consulta para detectar webhook perdido antes do prazo · métricas (Micrometer) e
 tracing · verificação de origem do webhook (mTLS) · notificação do recebedor por padrão outbox · validação do valor do pagamento
 contra o da cobrança, se o negócio exigir.
-#   p i x g u a r d  
+#   p i x g u a r d 
+ 
  
