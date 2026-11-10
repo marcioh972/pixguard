@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pixguard
+      POSTGRES_USER: pixguard
+      # Senha de DESENVOLVIMENTO local. Em qualquer outro ambiente, defina POSTGRES_PASSWORD.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pixguard_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pixguard -d pixguard"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: pixguard-api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pixguard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pixguard_dev}
+      PIXGUARD_BANCO_URL: http://mock-bank:8081
+      # Padrões iguais aos do application.yml. Sobrescreva para demonstrar o job rapidamente, ex.:
+      #   PIXGUARD_COBRANCA_EXPIRACAOPADRAO=PT1M PIXGUARD_JOB_INTERVALO=PT10S PIXGUARD_JOB_TOLERANCIAEXPIRACAO=PT5S docker compose up
+      PIXGUARD_COBRANCA_EXPIRACAOPADRAO: ${PIXGUARD_COBRANCA_EXPIRACAOPADRAO:-PT1H}
+      PIXGUARD_JOB_INTERVALO: ${PIXGUARD_JOB_INTERVALO:-PT30S}
+      PIXGUARD_JOB_TOLERANCIAEXPIRACAO: ${PIXGUARD_JOB_TOLERANCIAEXPIRACAO:-PT1M}
+    ports:
+      - "8080:8080"
+
+  mock-bank:
+    build:
+      context: .
+      dockerfile: mock-bank/Dockerfile
+    environment:
+      MOCKBANK_WEBHOOK: http://api:8080/api/v1/webhooks/pix
+    ports:
+      - "8081:8081"
+
+volumes:
+  pgdata:

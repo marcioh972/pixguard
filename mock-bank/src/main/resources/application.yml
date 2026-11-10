@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: mock-bank
+
+server:
+  port: 8081
+
+mockbank:
+  # Para onde o banco simulado envia os webhooks (no Docker: http://api:8080/api/v1/webhooks/pix).
+  webhook: http://localhost:8080/api/v1/webhooks/pix

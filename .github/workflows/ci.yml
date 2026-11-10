@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # O runner do GitHub já traz Docker, necessário para o Testcontainers (PostgreSQL real, nunca H2).
+      - name: Compilar e testar os dois módulos
+        run: ./mvnw -B verify
+
+      - name: Relatórios de teste (em caso de falha)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-surefire
+          path: "**/target/surefire-reports/"

@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: pixguard-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pixguard
+    username: pixguard
+    # Valor padrão apenas para desenvolvimento local (igual ao do docker-compose.yml).
+    password: ${POSTGRES_PASSWORD:pixguard_dev}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # O schema é do Flyway; o Hibernate só confere se as entidades batem com ele.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+pixguard:
+  cobranca:
+    # Prazo de uma cobrança IMEDIATA, contado a partir da criação.
+    expiracao-padrao: 1h
+    # COM_VENCIMENTO expira no fim do dia do vencimento + estes dias.
+    validade-apos-vencimento-dias: 30
+    # Fuso usado para decidir o "dia" do vencimento.
+    fuso-vencimento: America/Sao_Paulo
+  webhook:
+    # Quantas vezes repetir um item que perdeu uma disputa de concorrência (além da primeira tentativa).
+    max-retentativas: 3
+    backoff-base: 20ms
+  devolucao:
+    # Prazo para devolver, contado a partir do horário do pagamento informado pelo banco.
+    prazo: 90d
+  banco:
+    url: http://localhost:8081
+    timeout-conexao: PT2S
+    timeout-leitura: PT3S
+  job:
+    habilitado: true
+    # ISO-8601 (PT30S = 30 segundos): é o formato que o @Scheduled aceita sem ambiguidade.
+    intervalo: PT30S
+    tamanho-lote: 50
+    # Folga após expira_em antes de consultar o banco e expirar (absorve atraso de webhook e relógio).
+    tolerancia-expiracao: PT1M
+
+logging:
+  pattern:
+    # Local: mostra txid e endToEndId do MDC. No container (perfil docker) o log é JSON e já os inclui.
+    level: "%5p [txid=%X{txid:-} e2e=%X{endToEndId:-}]"

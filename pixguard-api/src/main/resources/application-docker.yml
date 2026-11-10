@@ -1,0 +1,5 @@
+# Logs em JSON no container (legíveis por ferramentas de agregação).
+logging:
+  structured:
+    format:
+      console: logstash
